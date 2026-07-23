@@ -307,7 +307,7 @@ vector<vector<string>> kw_query_result(vector<vector<string>> queries){
     return move(res);
 }
 
-int main(int argc, char *argv[])
+int old_main(int argc, char **argv)
 {
     if(argc != 7){
         cout << "Usage: " << argv[0] << " <test_subdir_name> <number_of_keywords> <bucket_size> <isOptimized> <hamming_weight> <number_of_queries>\n";

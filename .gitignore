@@ -1,3 +1,10 @@
-.vscode*
+odxt-cli
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/
+update_count.csv
+odxt_config.txt
 test_vectors/
 results/
