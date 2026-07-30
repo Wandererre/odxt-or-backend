@@ -169,8 +169,11 @@ def run_binary(binary: str, args: List[str], timeout: int = 60) -> dict:
     cmd = [binary_path] + args
     log.info("Running: %s (cwd=%s)", " ".join(cmd), BASE_DIR)
     try:
+        env = {**os.environ}
+        if "REDIS_HOST" not in env or not env["REDIS_HOST"]:
+            env["REDIS_HOST"] = "sse-redis"
         result = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=timeout, cwd=BASE_DIR
+            cmd, capture_output=True, text=True, timeout=timeout, cwd=BASE_DIR, env=env
         )
         stdout = result.stdout.strip()
         stderr = result.stderr.strip()

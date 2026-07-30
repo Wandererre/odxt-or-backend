@@ -1,6 +1,19 @@
 #include "odxt_main_single_thread.h"
 
-auto redis = Redis("tcp://127.0.0.1:6379");
+#include <memory>
+
+static std::unique_ptr<sw::redis::Redis> redis_ptr;
+
+sw::redis::Redis& get_redis() {
+    if (!redis_ptr) {
+        const char* host = std::getenv("REDIS_HOST");
+        std::string h = (host && *host) ? host : "sse-redis";
+        redis_ptr = std::make_unique<sw::redis::Redis>("tcp://" + h + ":6379");
+    }
+    return *redis_ptr;
+}
+
+#define redis get_redis()
 
 int Redis_Init(){
     // select database 7

@@ -1,10 +1,16 @@
 #include "odxt_main.h"
 
-auto redis = Redis("tcp://127.0.0.1:6379");
+inline std::string get_redis_url() {
+    const char* host = std::getenv("REDIS_HOST");
+    std::string h = (host && *host) ? host : "sse-redis";
+    return std::string("tcp://") + h + ":6379";
+}
+auto redis = Redis(get_redis_url());
 
 int Sys_Init()
 {
-    connection_options.host = "127.0.0.1";  // Required.
+    const char* rh = std::getenv("REDIS_HOST");
+    connection_options.host = (rh && *rh) ? rh : "sse-redis";  // Required.
     pool_options.size = N_threads;  // Pool size, i.e. max number of connections.
 
     BloomFilter_Init(BF);
@@ -1253,7 +1259,7 @@ int TSet_SetUp()
     N_words = (N_max_ids/N_threads) + ((N_max_ids%N_threads==0)?0:1);
     N_max_id_words = N_words * N_threads;
 
-    auto redis = Redis("tcp://127.0.0.1:6379");
+    auto redis = Redis(get_redis_url());
 
     TW = new unsigned char[48*N_max_id_words];
     W = new unsigned char[16];
