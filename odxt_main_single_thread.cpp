@@ -176,8 +176,7 @@ int ODXT_Update(std::string keyword, std::string kw, std::string id, int cnt, un
     auto xset_key = HexToStr(xtag,32);
     auto xset_val = std::string("1");
     
-    redis.set(tset_key.data(), tset_val.data());
-    redis.set(xset_key.data(), xset_val.data());
+    redis.mset({{tset_key, tset_val}, {xset_key, xset_val}});
 
     return 0;
 }

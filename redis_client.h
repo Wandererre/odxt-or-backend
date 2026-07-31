@@ -8,6 +8,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <optional>
+#include <vector>
+#include <utility>
+#include <algorithm>
 
 class RedisClient {
 private:
@@ -99,6 +102,30 @@ public:
         if (!ctx) return;
         redisReply* reply = (redisReply*)redisCommand(ctx, "SET %b %b", key.data(), key.size(), val.data(), val.size());
         if (reply) freeReplyObject(reply);
+    }
+
+    void mset(const std::vector<std::pair<std::string, std::string>>& kv_pairs) {
+        if (!ctx || kv_pairs.empty()) return;
+        size_t chunk_size = 200;
+        for (size_t i = 0; i < kv_pairs.size(); i += chunk_size) {
+            size_t end = std::min(kv_pairs.size(), i + chunk_size);
+            size_t count = end - i;
+            std::vector<const char*> argv;
+            std::vector<size_t> argvlen;
+            argv.reserve(1 + count * 2);
+            argvlen.reserve(1 + count * 2);
+            static const char* mset_cmd = "MSET";
+            argv.push_back(mset_cmd);
+            argvlen.push_back(4);
+            for (size_t k = i; k < end; ++k) {
+                argv.push_back(kv_pairs[k].first.data());
+                argvlen.push_back(kv_pairs[k].first.size());
+                argv.push_back(kv_pairs[k].second.data());
+                argvlen.push_back(kv_pairs[k].second.size());
+            }
+            redisReply* reply = (redisReply*)redisCommandArgv(ctx, (int)argv.size(), argv.data(), argvlen.data());
+            if (reply) freeReplyObject(reply);
+        }
     }
 
     std::optional<std::string> get(const std::string& key) {
