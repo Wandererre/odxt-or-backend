@@ -103,7 +103,7 @@ int ODXT_SetUp_Top()
 
         auto updates = read_file(widxdb_file);
 
-        int N_Threads = std::thread::hardware_concurrency();
+        int N_Threads = 1;
         // we have to use threads but we have to make sure that the 
         // access to the update_count is synchronized
         // 1: we can access it in the thread wrapper by ourselves and pass the count to ODXT_update
