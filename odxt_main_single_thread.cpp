@@ -353,7 +353,7 @@ int ODXT_Search(std::unordered_set<std::string> *IdList, std::vector<std::string
     std::vector<std::string> stokenList(update_cnt);
     std::vector<std::vector<std::vector<string>>> xtokenList(update_cnt);
 
-    int pre_thread_count = min(update_cnt, (int)std::thread::hardware_concurrency());
+    int pre_thread_count = 1;
     std::vector<std::future<int>> pre_threads;
     for(int i=0; i<pre_thread_count; ++i){
         pre_threads.push_back(async(Client_Pre_Thread, i, pre_thread_count, std::ref(query), update_cnt, std::ref(kws), std::ref(stokenList), std::ref(xtokenList)));
@@ -368,7 +368,7 @@ int ODXT_Search(std::unordered_set<std::string> *IdList, std::vector<std::string
 
     std::vector<std::pair<std::string,std::pair<unsigned int, unsigned int>>> sEOpList(stokenList.size());
 
-    int server_thread_count = min((unsigned int)stokenList.size(), std::thread::hardware_concurrency());
+    int server_thread_count = 1;
     std::vector<std::future<int>> server_threads;
     for(int i=0; i<server_thread_count; ++i){
         server_threads.push_back(async(Server_Search_Thread, i, server_thread_count, std::ref(stokenList), std::ref(xtokenList), std::ref(sEOpList)));
