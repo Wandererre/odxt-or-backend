@@ -33,10 +33,11 @@ RUN git clone https://github.com/sewenew/redis-plus-plus.git /tmp/redis-plus-plu
     && cd /tmp/redis-plus-plus \
     && mkdir build \
     && cd build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/usr -DREDIS_PLUS_PLUS_CXX_STANDARD=17 -DREDIS_PLUS_PLUS_USE_TLS=ON -DHIREDIS_HEADER=/usr/include -DHIREDIS_LIB=/usr/lib/libhiredis.so -DHIREDIS_TLS_HEADER=/usr/include -DHIREDIS_TLS_LIB=/usr/lib/libhiredis_ssl.so .. \
+    && cmake -DREDIS_PLUS_PLUS_CXX_STANDARD=17 -DREDIS_PLUS_PLUS_USE_TLS=ON -DHIREDIS_HEADER=/usr/include -DHIREDIS_LIB=/usr/lib/libhiredis.so -DHIREDIS_TLS_HEADER=/usr/include -DHIREDIS_TLS_LIB=/usr/lib/libhiredis_ssl.so .. \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
+    && cp -r /usr/local/include/sw /usr/include/ \
     && rm -rf /tmp/redis-plus-plus
 
 WORKDIR /app
