@@ -1,4 +1,5 @@
 #include "odxt_main_single_thread.h"
+#include <sw/redis++/redis_uri.h>
 
 #include <memory>
 
