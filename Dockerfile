@@ -45,7 +45,7 @@ WORKDIR /app
 COPY . /app
 
 # Build odxt-cli using the updated build.sh
-RUN chmod +x build.sh && ./build.sh
+RUN rm -f odxt-cli && chmod +x build.sh && ./build.sh
 
 # Set up virtual environment and install dependencies
 RUN python3 -m venv /opt/venv
