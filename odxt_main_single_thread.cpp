@@ -5,11 +5,20 @@
 
 static std::unique_ptr<sw::redis::Redis> redis_ptr;
 
+static std::string trim_str(const char* raw) {
+    if (!raw) return "";
+    std::string s(raw);
+    size_t start = s.find_first_not_of(" \t\n\r\"'");
+    if (start == std::string::npos) return "";
+    size_t end = s.find_last_not_of(" \t\n\r\"'");
+    return s.substr(start, end - start + 1);
+}
+
 sw::redis::Redis& get_redis() {
     if (!redis_ptr) {
-        const char* env_url = std::getenv("REDIS_URL");
+        std::string env_url = trim_str(std::getenv("REDIS_URL"));
         sw::redis::ConnectionOptions opts;
-        if (env_url && *env_url) {
+        if (!env_url.empty()) {
             std::string url_str = env_url;
             bool is_tls = false;
             if (url_str.rfind("rediss://", 0) == 0) {
@@ -21,16 +30,14 @@ sw::redis::Redis& get_redis() {
             }
             opts = sw::redis::Uri(url_str).connection_options();
             opts.db = 0;
-#ifdef SEWENEW_REDISPLUSPLUS_TLS_H
             if (is_tls) {
                 opts.tls.enabled = true;
                 opts.tls.sni = opts.host;
                 opts.tls.verify_mode = 0;
             }
-#endif
         } else {
-            const char* host = std::getenv("REDIS_HOST");
-            std::string h = (host && *host) ? host : "sse-redis";
+            std::string h = trim_str(std::getenv("REDIS_HOST"));
+            if (h.empty()) h = "sse-redis";
             opts = sw::redis::Uri("redis://" + h + ":6379").connection_options();
             opts.db = 0;
         }
