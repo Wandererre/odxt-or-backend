@@ -348,7 +348,7 @@ int old_main(int argc, char **argv)
     stop = TIME_MARKER();
 
     auto search_time = TIME_ELAPSED(start, stop);
-    cout << "Search time: " << search_time << " microseconds" << std::endl;
+    cout << "Search time = " << search_time << " micro-seconds" << std::endl;
 
     string update_time_file = "./test_vectors/" + subdir_name + "/update_time.csv";
     string mkw_update_count_file = "./test_vectors/" + subdir_name + "/mkw_update_count.csv";
