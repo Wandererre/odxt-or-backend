@@ -2,20 +2,22 @@
 
 int DB_StrToHex2(unsigned char *hexarr,unsigned char *text)
 {
-    char temp[2];
+    char temp[3];
     temp[0] = text[0];
     temp[1] = text[1];
+    temp[2] = '\0';
     hexarr[0] = ::strtoul(temp,nullptr,16) & 0xFF;
     return 0;
 }
 
 int DB_StrToHex(unsigned char *hexarr,unsigned char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<2; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
@@ -23,11 +25,12 @@ int DB_StrToHex(unsigned char *hexarr,unsigned char *text)
 
 int DB_StrToHex8(unsigned char *hexarr,unsigned char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<4; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
@@ -35,11 +38,12 @@ int DB_StrToHex8(unsigned char *hexarr,unsigned char *text)
 
 int DB_StrToHex8(unsigned char *hexarr,const char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<4; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
@@ -47,11 +51,12 @@ int DB_StrToHex8(unsigned char *hexarr,const char *text)
 
 int DB_StrToHex12(unsigned char *hexarr,unsigned char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<12; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
@@ -59,11 +64,12 @@ int DB_StrToHex12(unsigned char *hexarr,unsigned char *text)
 
 int DB_StrToHex16(unsigned char *hexarr,unsigned char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<16; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
@@ -71,11 +77,12 @@ int DB_StrToHex16(unsigned char *hexarr,unsigned char *text)
 
 int DB_StrToHex32(unsigned char *hexarr,unsigned char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<32; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
@@ -83,11 +90,12 @@ int DB_StrToHex32(unsigned char *hexarr,unsigned char *text)
 
 int DB_StrToHex49(unsigned char *hexarr,unsigned char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<49; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
@@ -95,11 +103,12 @@ int DB_StrToHex49(unsigned char *hexarr,unsigned char *text)
 
 int DB_StrToHex48(unsigned char *hexarr,const char *text)
 {
-    char temp[2];
+    char temp[3];
     for (int j=0; j<48; j++)
     {
         temp[0] = text[2*j];
         temp[1] = text[2*j+1];
+        temp[2] = '\0';
         hexarr[j] = ::strtoul(temp,nullptr,16) & 0xFF;
     }
     return 0;
