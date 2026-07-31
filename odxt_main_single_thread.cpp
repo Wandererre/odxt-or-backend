@@ -1,50 +1,12 @@
-#include <sw/redis++/tls.h>
+#include "redis_client.h"
 #include "odxt_main_single_thread.h"
-#include <sw/redis++/redis_uri.h>
-
 #include <memory>
 
-static std::unique_ptr<sw::redis::Redis> redis_ptr;
+static std::unique_ptr<RedisClient> redis_ptr;
 
-static std::string trim_str(const char* raw) {
-    if (!raw) return "";
-    std::string s(raw);
-    size_t start = s.find_first_not_of(" \t\n\r\"'");
-    if (start == std::string::npos) return "";
-    size_t end = s.find_last_not_of(" \t\n\r\"'");
-    return s.substr(start, end - start + 1);
-}
-
-sw::redis::Redis& get_redis() {
+RedisClient& get_redis() {
     if (!redis_ptr) {
-        std::string env_url = trim_str(std::getenv("REDIS_URL"));
-        sw::redis::ConnectionOptions opts;
-        if (!env_url.empty()) {
-            std::string url_str = env_url;
-            bool is_tls = false;
-            if (url_str.rfind("rediss://", 0) == 0) {
-                url_str = "redis://" + url_str.substr(9);
-                is_tls = true;
-            } else if (url_str.rfind("tls://", 0) == 0) {
-                url_str = "redis://" + url_str.substr(6);
-                is_tls = true;
-            }
-            opts = sw::redis::Uri(url_str).connection_options();
-            opts.db = 0;
-#ifdef SEWENEW_REDISPLUSPLUS_TLS_H
-            if (is_tls) {
-                opts.tls.enabled = true;
-                opts.tls.sni = opts.host;
-                opts.tls.verify_mode = 0;
-            }
-#endif
-        } else {
-            std::string h = trim_str(std::getenv("REDIS_HOST"));
-            if (h.empty()) h = "sse-redis";
-            opts = sw::redis::Uri("redis://" + h + ":6379").connection_options();
-            opts.db = 0;
-        }
-        redis_ptr = std::make_unique<sw::redis::Redis>(opts);
+        redis_ptr = std::make_unique<RedisClient>();
     }
     return *redis_ptr;
 }
@@ -52,10 +14,6 @@ sw::redis::Redis& get_redis() {
 #define redis get_redis()
 
 int Redis_Init(){
-    // select database 7 if supported, otherwise stay on DB 0
-    try {
-        redis.command("SELECT", "7");
-    } catch (...) {}
     return 0;
 }
 
