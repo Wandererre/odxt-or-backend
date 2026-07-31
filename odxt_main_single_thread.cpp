@@ -21,13 +21,11 @@ sw::redis::Redis& get_redis() {
             }
             opts = sw::redis::Uri(url_str).connection_options();
             opts.db = 0;
-#ifdef SEWENEW_REDISPLUSPLUS_TLS_H
             if (is_tls) {
                 opts.tls.enabled = true;
                 opts.tls.sni = opts.host;
                 opts.tls.cacertdir = "/etc/ssl/certs";
             }
-#endif
         } else {
             const char* host = std::getenv("REDIS_HOST");
             std::string h = (host && *host) ? host : "sse-redis";
