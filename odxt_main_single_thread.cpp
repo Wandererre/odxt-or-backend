@@ -9,11 +9,11 @@ sw::redis::Redis& get_redis() {
     if (!redis_ptr) {
         const char* env_url = std::getenv("REDIS_URL");
         if (env_url && *env_url) {
-            redis_ptr = std::make_unique<sw::redis::Redis>(sw::redis::parse_url(env_url));
+            redis_ptr = std::make_unique<sw::redis::Redis>(sw::redis::Uri(env_url).connection_options());
         } else {
             const char* host = std::getenv("REDIS_HOST");
             std::string h = (host && *host) ? host : "sse-redis";
-            redis_ptr = std::make_unique<sw::redis::Redis>(sw::redis::parse_url("tcp://" + h + ":6379"));
+            redis_ptr = std::make_unique<sw::redis::Redis>(sw::redis::Uri("tcp://" + h + ":6379").connection_options());
         }
     }
     return *redis_ptr;
