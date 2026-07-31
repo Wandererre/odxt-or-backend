@@ -170,7 +170,7 @@ def run_binary(binary: str, args: List[str], timeout: int = 60) -> dict:
     log.info("Running: %s (cwd=%s)", " ".join(cmd), BASE_DIR)
     try:
         env = {**os.environ}
-        if "REDIS_HOST" not in env or not env["REDIS_HOST"]:
+        if "REDIS_URL" not in env and ("REDIS_HOST" not in env or not env["REDIS_HOST"]):
             env["REDIS_HOST"] = "sse-redis"
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=timeout, cwd=BASE_DIR, env=env

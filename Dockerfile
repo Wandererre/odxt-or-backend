@@ -20,13 +20,13 @@ RUN apt-get update && apt-get install -y \
     cmake \
     && rm -rf /var/lib/apt/lists/*
 
-# Install redis-plus-plus from source
+# Install redis-plus-plus from source with TLS support
 RUN git clone https://github.com/sewenew/redis-plus-plus.git /tmp/redis-plus-plus \
     && cd /tmp/redis-plus-plus \
     && mkdir build \
     && cd build \
-    && cmake -DREDIS_PLUS_PLUS_CXX_STANDARD=17 .. \
-    && make \
+    && cmake -DREDIS_PLUS_PLUS_CXX_STANDARD=17 -DREDIS_PLUS_PLUS_USE_TLS=ON .. \
+    && make -j$(nproc) \
     && make install \
     && ldconfig \
     && rm -rf /tmp/redis-plus-plus
