@@ -297,11 +297,12 @@ int Server_Search_Thread(const int start, const int step, const vector<string>& 
 
         //TSet retrieval
         string s = stokenList[j];
+        if (s.empty()) continue;
         auto val = redis.get(s);
-        if (!val) {
+        if (!val || val->length() < 96) {
             continue;
         }
-        StrToHex(sval_alpha,std::string(val->data()),48);
+        StrToHex(sval_alpha,*val,48);
         ::memcpy(sval,sval_alpha,16);
         ::memcpy(alpha,sval_alpha+16,32);//Need to copy only 16 bytes, rest are zero
 
@@ -398,6 +399,7 @@ int ODXT_Search(std::unordered_set<std::string> *IdList, std::vector<std::string
 
     for(unsigned int l=0;l<seoplist_size;++l){
         auto sval = sEOpList[l].first;
+        if (sval.empty() || sval.length() < 32) continue;
         auto j = sEOpList[l].second.first;
         auto cnt_j = sEOpList[l].second.second;
 
