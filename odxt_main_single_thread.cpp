@@ -20,14 +20,17 @@ sw::redis::Redis& get_redis() {
                 is_tls = true;
             }
             opts = sw::redis::Uri(url_str).connection_options();
+            opts.db = 0;
             if (is_tls) {
                 opts.tls.enabled = true;
                 opts.tls.sni = opts.host;
+                opts.tls.cacertdir = "/etc/ssl/certs";
             }
         } else {
             const char* host = std::getenv("REDIS_HOST");
             std::string h = (host && *host) ? host : "sse-redis";
             opts = sw::redis::Uri("redis://" + h + ":6379").connection_options();
+            opts.db = 0;
         }
         redis_ptr = std::make_unique<sw::redis::Redis>(opts);
     }
@@ -37,8 +40,10 @@ sw::redis::Redis& get_redis() {
 #define redis get_redis()
 
 int Redis_Init(){
-    // select database 7
-    redis.command("SELECT", "7");
+    // select database 7 if supported, otherwise stay on DB 0
+    try {
+        redis.command("SELECT", "7");
+    } catch (...) {}
     return 0;
 }
 

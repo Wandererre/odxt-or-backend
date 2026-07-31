@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     redis-tools \
     git \
     cmake \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Build hiredis with SSL support
