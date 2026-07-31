@@ -24,9 +24,11 @@ RUN apt-get update && apt-get install -y \
 # Build hiredis with SSL support
 RUN git clone https://github.com/redis/hiredis.git /tmp/hiredis \
     && cd /tmp/hiredis \
-    && make USE_SSL=1 PREFIX=/usr \
-    && make USE_SSL=1 PREFIX=/usr install \
+    && make USE_SSL=1 \
+    && make USE_SSL=1 install \
     && ldconfig \
+    && cp -f /usr/local/lib/libhiredis* /usr/lib/ \
+    && cp -f /usr/local/lib/libhiredis* /usr/lib/x86_64-linux-gnu/ \
     && rm -rf /tmp/hiredis
 
 RUN git clone https://github.com/sewenew/redis-plus-plus.git /tmp/redis-plus-plus \
