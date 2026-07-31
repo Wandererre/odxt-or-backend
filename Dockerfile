@@ -20,6 +20,14 @@ RUN apt-get update && apt-get install -y \
     cmake \
     && rm -rf /var/lib/apt/lists/*
 
+# Build hiredis with SSL support
+RUN git clone https://github.com/redis/hiredis.git /tmp/hiredis \
+    && cd /tmp/hiredis \
+    && make USE_SSL=1 \
+    && make install \
+    && ldconfig \
+    && rm -rf /tmp/hiredis
+
 # Install redis-plus-plus from source with TLS support
 RUN git clone https://github.com/sewenew/redis-plus-plus.git /tmp/redis-plus-plus \
     && cd /tmp/redis-plus-plus \
