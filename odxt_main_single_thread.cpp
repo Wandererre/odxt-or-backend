@@ -8,13 +8,27 @@ static std::unique_ptr<sw::redis::Redis> redis_ptr;
 sw::redis::Redis& get_redis() {
     if (!redis_ptr) {
         const char* env_url = std::getenv("REDIS_URL");
+        sw::redis::ConnectionOptions opts;
         if (env_url && *env_url) {
-            redis_ptr = std::make_unique<sw::redis::Redis>(sw::redis::Uri(env_url).connection_options());
+            std::string url_str = env_url;
+            bool is_tls = false;
+            if (url_str.rfind("rediss://", 0) == 0) {
+                url_str = "redis://" + url_str.substr(9);
+                is_tls = true;
+            } else if (url_str.rfind("tls://", 0) == 0) {
+                url_str = "redis://" + url_str.substr(6);
+                is_tls = true;
+            }
+            opts = sw::redis::Uri(url_str).connection_options();
+            if (is_tls) {
+                opts.tls.enabled = true;
+            }
         } else {
             const char* host = std::getenv("REDIS_HOST");
             std::string h = (host && *host) ? host : "sse-redis";
-            redis_ptr = std::make_unique<sw::redis::Redis>(sw::redis::Uri("tcp://" + h + ":6379").connection_options());
+            opts = sw::redis::Uri("redis://" + h + ":6379").connection_options();
         }
+        redis_ptr = std::make_unique<sw::redis::Redis>(opts);
     }
     return *redis_ptr;
 }
