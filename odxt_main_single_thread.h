@@ -1,6 +1,8 @@
 #ifndef ODXTMAIN_H
 #define ODXTMAIN_H
 
+#include <sw/redis++/tls.h>
+
 #include <cstdio>
 #include <unistd.h>
 #include <cstdlib>
