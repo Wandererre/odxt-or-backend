@@ -1,3 +1,4 @@
+#include <sw/redis++/tls.h>
 #include "odxt_main_single_thread.h"
 #include <sw/redis++/redis_uri.h>
 
@@ -30,11 +31,13 @@ sw::redis::Redis& get_redis() {
             }
             opts = sw::redis::Uri(url_str).connection_options();
             opts.db = 0;
+#ifdef SEWENEW_REDISPLUSPLUS_TLS_H
             if (is_tls) {
                 opts.tls.enabled = true;
                 opts.tls.sni = opts.host;
                 opts.tls.verify_mode = 0;
             }
+#endif
         } else {
             std::string h = trim_str(std::getenv("REDIS_HOST"));
             if (h.empty()) h = "sse-redis";
@@ -337,6 +340,9 @@ int Server_Search_Thread(const int start, const int step, const vector<string>& 
         //TSet retrieval
         string s = stokenList[j];
         auto val = redis.get(s);
+        if (!val) {
+            continue;
+        }
         StrToHex(sval_alpha,std::string(val->data()),48);
         ::memcpy(sval,sval_alpha,16);
         ::memcpy(alpha,sval_alpha+16,32);//Need to copy only 16 bytes, rest are zero
