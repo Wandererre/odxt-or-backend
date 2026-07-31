@@ -126,6 +126,11 @@ int ODXT_SetUp_Top()
             t.join();
         }
 
+        if (!setup_kv_batch.empty()) {
+            redis.mset(setup_kv_batch);
+            setup_kv_batch.clear();
+        }
+
         vector<vector<string>> update_count_vec;
         for(auto& kv:update_count){
             update_count_vec.push_back({kv.first, to_string(kv.second)});

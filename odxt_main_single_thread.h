@@ -50,7 +50,11 @@
 using namespace std;
 using namespace sw::redis;
 
+#include "redis_client.h"
 extern string widxdb_file;
+extern std::vector<std::pair<std::string, std::string>> setup_kv_batch;
+RedisClient& get_redis();
+#define redis get_redis()
 
 
 extern mpz_class Prime;

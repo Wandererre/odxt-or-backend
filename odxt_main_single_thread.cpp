@@ -2,6 +2,8 @@
 #include "odxt_main_single_thread.h"
 #include <memory>
 
+std::vector<std::pair<std::string, std::string>> setup_kv_batch;
+
 static std::unique_ptr<RedisClient> redis_ptr;
 
 RedisClient& get_redis() {
@@ -176,7 +178,8 @@ int ODXT_Update(std::string keyword, std::string kw, std::string id, int cnt, un
     auto xset_key = HexToStr(xtag,32);
     auto xset_val = std::string("1");
     
-    redis.mset({{tset_key, tset_val}, {xset_key, xset_val}});
+    setup_kv_batch.push_back({tset_key, tset_val});
+    setup_kv_batch.push_back({xset_key, xset_val});
 
     return 0;
 }
