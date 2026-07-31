@@ -141,6 +141,41 @@ public:
         return std::nullopt;
     }
 
+    std::vector<std::optional<std::string>> mget(const std::vector<std::string>& keys) {
+        std::vector<std::optional<std::string>> results(keys.size(), std::nullopt);
+        if (!ctx || keys.empty()) return results;
+
+        size_t chunk_size = 200;
+        for (size_t i = 0; i < keys.size(); i += chunk_size) {
+            size_t end = std::min(keys.size(), i + chunk_size);
+            size_t count = end - i;
+            std::vector<const char*> argv;
+            std::vector<size_t> argvlen;
+            argv.reserve(1 + count);
+            argvlen.reserve(1 + count);
+            static const char* mget_cmd = "MGET";
+            argv.push_back(mget_cmd);
+            argvlen.push_back(4);
+            for (size_t k = i; k < end; ++k) {
+                argv.push_back(keys[k].data());
+                argvlen.push_back(keys[k].size());
+            }
+            redisReply* reply = (redisReply*)redisCommandArgv(ctx, (int)argv.size(), argv.data(), argvlen.data());
+            if (reply) {
+                if (reply->type == REDIS_REPLY_ARRAY) {
+                    for (size_t r = 0; r < reply->elements; ++r) {
+                        redisReply* elem = reply->element[r];
+                        if (elem && elem->type == REDIS_REPLY_STRING) {
+                            results[i + r] = std::string(elem->str, elem->len);
+                        }
+                    }
+                }
+                freeReplyObject(reply);
+            }
+        }
+        return results;
+    }
+
     bool exists(const std::string& key) {
         if (!ctx) return false;
         redisReply* reply = (redisReply*)redisCommand(ctx, "EXISTS %b", key.data(), key.size());

@@ -287,8 +287,8 @@ int Server_Search_Thread(const int start, const int step, const vector<string>& 
     unsigned char xtoken[32];
     unsigned char xtag[32];
 
-    //Get stoken list size
     auto stokelist_size = stokenList.size();
+    auto stoken_vals = redis.mget(stokenList);
 
     for(unsigned int j=start; j<stokelist_size; j+=step){
         cnt_j = 0;
@@ -300,7 +300,7 @@ int Server_Search_Thread(const int start, const int step, const vector<string>& 
         //TSet retrieval
         string s = stokenList[j];
         if (s.empty()) continue;
-        auto val = redis.get(s);
+        auto val = (j < stoken_vals.size()) ? stoken_vals[j] : std::nullopt;
         if (!val || val->length() < 96) {
             continue;
         }
@@ -311,19 +311,18 @@ int Server_Search_Thread(const int start, const int step, const vector<string>& 
         //Get the xtokenlist_j
         auto xtokenlist_j = xtokenList[j];
         for(unsigned int i=0; i<xtokenlist_j.size(); ++i){
-            //Retrieve xtoken
+            vector<string> xtag_candidates;
             for(auto xtoken_str:xtokenlist_j[i]){
                 ::memset(xtag,0x00,32);
                 ::memset(xtoken,0x00,32);
                 StrToHex(xtoken,xtoken_str,32);
                 ScalarMul(xtag,alpha,xtoken);
-
-                //XSet retrieval
-                string xtag_str = HexToStr(xtag,32);
-                auto val = redis.exists(xtag_str);
-                
-                //If val exists, the increment count
-                if(val){
+                xtag_candidates.push_back(HexToStr(xtag,32));
+            }
+            if (xtag_candidates.empty()) continue;
+            auto xtag_res = redis.mget(xtag_candidates);
+            for (auto& r : xtag_res) {
+                if (r.has_value()) {
                     cnt_j++;
                     break;
                 }
