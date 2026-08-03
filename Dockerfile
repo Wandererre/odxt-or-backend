@@ -41,9 +41,10 @@ COPY . .
 # Fix line endings for shell scripts (CRLF -> LF)
 RUN sed -i 's/\r//' build.sh && chmod +x build.sh
 
-# ── Compile the C++ binary (cloud-safe: SSE2 + portable only) ────────────────
-# Disables SSE4.1, AVX2, AVX512 which are not available on all cloud build CPUs
-RUN g++ -std=c++17 -O2 -msse2 -fpermissive \
+# ── Compile the C++ binary (cloud-safe: SSE2 + AES-NI + portable BLAKE3) ────
+# Requires -maes for wmmintrin.h AES-NI instructions in aes.h
+# Disables SSE4.1, AVX2, AVX512 in BLAKE3 for maximum cloud container compatibility
+RUN g++ -std=c++17 -O2 -msse2 -maes -fpermissive \
         -DBLAKE3_NO_SSE41 -DBLAKE3_NO_AVX2 -DBLAKE3_NO_AVX512 \
         odxt_cli.cpp aes.cpp rawdatautil.cpp ecc_x25519.cpp \
         ./c/blake_hash.cpp ./c/blake3.c ./c/blake3_dispatch.c \
