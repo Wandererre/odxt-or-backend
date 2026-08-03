@@ -2,58 +2,68 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies for C++ binaries and Python
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# ── System packages ───────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     make \
-    libssl-dev \
-    libcrypto++-dev \
-    libgmp-dev \
-    libntl-dev \
-    libhiredis-dev \
+    cmake \
     python3 \
     python3-pip \
     python3-venv \
-    redis-tools \
+    redis-server \
+    libgmp-dev \
+    libgmpxx4ldbl \
+    libhiredis-dev \
+    libssl-dev \
+    pkg-config \
     git \
-    cmake \
+    wget \
+    curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Build hiredis with SSL support
-RUN git clone https://github.com/redis/hiredis.git /tmp/hiredis \
-    && cd /tmp/hiredis \
-    && make USE_SSL=1 \
-    && make USE_SSL=1 install \
-    && ldconfig \
-    && cp -f /usr/local/lib/libhiredis* /usr/lib/ \
-    && cp -f /usr/local/lib/libhiredis* /usr/lib/x86_64-linux-gnu/ \
-    && rm -rf /tmp/hiredis
-
-RUN git clone https://github.com/sewenew/redis-plus-plus.git /tmp/redis-plus-plus \
+# ── Build redis-plus-plus from source ────────────────────────────────────────
+RUN git clone --depth 1 --branch 1.3.12 https://github.com/sewenew/redis-plus-plus.git /tmp/redis-plus-plus \
     && cd /tmp/redis-plus-plus \
-    && mkdir build \
-    && cd build \
-    && cmake -DREDIS_PLUS_PLUS_CXX_STANDARD=17 -DREDIS_PLUS_PLUS_USE_TLS=ON -DHIREDIS_HEADER=/usr/include -DHIREDIS_LIB=/usr/lib/libhiredis.so -DHIREDIS_TLS_HEADER=/usr/include -DHIREDIS_TLS_LIB=/usr/lib/libhiredis_ssl.so .. \
+    && mkdir build && cd build \
+    && cmake -DREDIS_PLUS_PLUS_CXX_STANDARD=17 .. \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
-    && cp -r /usr/local/include/sw /usr/include/ \
     && rm -rf /tmp/redis-plus-plus
 
+# ── App directory ─────────────────────────────────────────────────────────────
 WORKDIR /app
 
-COPY . /app
+# Copy all source files
+COPY . .
 
-# Build odxt-cli using the updated build.sh
-RUN rm -f odxt-cli && chmod +x build.sh && ./build.sh
+# Fix line endings for shell scripts (CRLF -> LF)
+RUN sed -i 's/\r//' build.sh && chmod +x build.sh
 
-# Set up virtual environment and install dependencies
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
+# ── Compile the C++ binary (cloud-safe: SSE2 + portable only) ────────────────
+# Disables SSE4.1, AVX2, AVX512 which are not available on all cloud build CPUs
+RUN g++ -std=c++17 -O2 -msse2 -fpermissive \
+        -DBLAKE3_NO_SSE41 -DBLAKE3_NO_AVX2 -DBLAKE3_NO_AVX512 \
+        odxt_cli.cpp aes.cpp rawdatautil.cpp ecc_x25519.cpp \
+        ./c/blake_hash.cpp ./c/blake3.c ./c/blake3_dispatch.c \
+        ./c/blake3_portable.c ./c/blake3_sse2.c \
+        odxt_main_single_thread.cpp utils.cpp main_single_thread.cpp \
+        -lgmpxx -lgmp -lredis++ -lhiredis -lpthread -o odxt-cli \
+    && echo "Build succeeded!"
+
+# ── Python dependencies ───────────────────────────────────────────────────────
+RUN pip3 install --no-cache-dir \
+    fastapi \
+    "uvicorn[standard]" \
+    python-multipart \
+    PyPDF2 \
+    redis
+
+# ── Entrypoint ────────────────────────────────────────────────────────────────
+COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 EXPOSE 8001
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+ENTRYPOINT ["/entrypoint.sh"]
